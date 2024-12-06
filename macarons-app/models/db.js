@@ -1,22 +1,28 @@
-// lib/db.js
-import mongoose from 'mongoose';
+require('dotenv').config();  // Ensure this is at the top!
 
-const connectDB = async () => {
-  if (mongoose.connections[0].readyState) {
-    console.log('Already connected to the database');
-    return;
-  }
+console.log("Environment Variables Loaded:", {
+  DB_USER: process.env.DB_USER,
+  DB_PASSWORD: process.env.DB_PASSWORD,
+  DB_CLUSTER: process.env.DB_CLUSTER,
+  DB_NAME: process.env.DB_NAME,
+});
 
+const mongoose = require('mongoose');
+
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_CLUSTER}/${process.env.DB_NAME}?retryWrites=true&w=majority`;
+
+async function connectDB() {
   try {
-    await mongoose.connect(process.env.MONGO_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-    console.log('MongoDB connected');
+    if (!uri) {
+      console.error('Mongo URI is undefined. Please check .env variables.');
+      return;
+    }
+    
+    await mongoose.connect(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+    console.log('Database connected successfully!');
   } catch (error) {
-    console.error('MongoDB connection error:', error);
-    process.exit(1);
+    console.error('Database connection error:', error);
   }
-};
+}
 
-export default connectDB;
+connectDB();
